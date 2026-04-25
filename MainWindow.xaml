@@ -1,0 +1,431 @@
+﻿<!-- 主窗口：x:Class 必须和 MainWindow.xaml.cs 里的类名一致。 -->
+<Window x:Class="BookShelfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:BookShelfApp.Converters"
+
+        mc:Ignorable="d"
+        Title="本地图书管理软件"
+        Width="1200"
+        Height="720"
+        MinWidth="1000"
+        MinHeight="600"
+        
+        
+
+        WindowStartupLocation="CenterScreen">
+
+    <!-- 窗口资源：这里放当前窗口会用到的转换器。 -->
+    <Window.Resources>
+        <!-- 封面图片转换器：把数据库里的 CoverPath 转成可显示图片；路径不存在时显示默认封面。 -->
+        <converters:CoverImageConverter x:Key="CoverImageConverter" />
+    </Window.Resources>
+
+
+    <!-- 根布局：把窗口分成“顶部工具栏”和“下方主体区”两部分。 -->
+    <Grid>
+        <!-- 根布局行定义：第一行自适应高度，第二行占满剩余空间。 -->
+        <Grid.RowDefinitions>
+            <!-- 第一行：顶部工具栏。 -->
+            <RowDefinition Height="Auto" />
+            <!-- 第二行：主体内容区。 -->
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 顶部工具栏外层边框：用于分隔视觉区域。 -->
+        <Border Grid.Row="0"
+                Padding="12"
+                BorderBrush="#DDDDDD"
+                BorderThickness="0,0,0,1"
+                Background="White">
+            <!-- 顶部工具栏内部布局：使用 Grid 做横向排布。 -->
+            <Grid>
+                <!-- 顶部工具栏列定义：按钮、间距、搜索框、搜索按钮、收藏按钮、右侧操作区。 -->
+                <Grid.ColumnDefinitions>
+                    <!-- 第 0 列：扫描按钮。 -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- 第 1 列：固定间距。 -->
+                    <ColumnDefinition Width="12" />
+                    <!-- 第 2 列：搜索输入框。 -->
+                    <ColumnDefinition Width="320" />
+                    <!-- 第 3 列：搜索按钮。 -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- 第 4 列：收藏切换按钮。 -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- 第 5 列：剩余空间，用于右侧分类操作区。 -->
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 扫描文件夹按钮：点击后选择目录并导入书籍。 -->
+                <Button x:Name="ScanFolderButton"
+                        Grid.Column="0"
+                        Width="120"
+                        Height="32"
+                        Padding="10,0"
+                        Content="扫描文件夹" />
+
+                <!-- 搜索输入框：输入书名关键字。 -->
+                <TextBox x:Name="SearchTextBox"
+                         Grid.Column="2"
+                         Height="32"
+                         Padding="8,0"
+                         VerticalContentAlignment="Center"
+                         ToolTip="请输入书名关键字进行搜索" />
+
+                <!-- 搜索按钮：执行书名搜索。 -->
+                <Button x:Name="SearchButton"
+                        Grid.Column="3"
+                        Margin="10,0,0,0"
+                        Width="80"
+                        Height="32"
+                        Content="搜索" />
+
+                <!-- 收藏切换按钮：对当前选中书籍执行收藏/取消收藏。 -->
+                <Button x:Name="ToggleFavoriteButton"
+                        Grid.Column="4"
+                        Margin="10,0,0,0"
+                        Width="120"
+                        Height="32"
+                        Content="收藏/取消收藏" />
+
+                <!-- 右侧操作区：手动修改分类 + 新增分类。 -->
+                <StackPanel Grid.Column="5"
+                            Orientation="Horizontal"
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center">
+
+                    <!-- 手动分类下拉框：给当前选中书籍指定内容分类。 -->
+                    <ComboBox x:Name="ManualCategoryComboBox"
+                              Width="160"
+                              Height="32"
+                              SelectedIndex="0">
+                        <!-- 固定分类项：电子信息类。 -->
+                        <ComboBoxItem Content="电子信息类" />
+                        <!-- 固定分类项：计算机类。 -->
+                        <ComboBoxItem Content="计算机类" />
+                        <!-- 固定分类项：文学类。 -->
+                        <ComboBoxItem Content="文学类" />
+                        <!-- 固定分类项：历史政治法律类。 -->
+                        <ComboBoxItem Content="历史政治法律类" />
+                        <!-- 固定分类项：未分类。 -->
+                        <ComboBoxItem Content="未分类" />
+                    </ComboBox>
+
+                    <!-- 手动修改分类按钮：把选中书籍更新为下拉框中的分类。 -->
+                    <Button x:Name="UpdateCategoryButton"
+                            Margin="10,0,0,0"
+                            Width="110"
+                            Height="32"
+                            Content="修改分类" />
+
+                    <!-- 新分类输入框：输入要新增的内容分类名。 -->
+                    <TextBox x:Name="NewCategoryTextBox"
+                             Width="140"
+                             Height="32"
+                             Margin="10,0,0,0"
+                             VerticalContentAlignment="Center"
+                             ToolTip="输入新内容分类，例如：英语类" />
+
+                    <!-- 新增分类按钮：把新分类写入数据库。 -->
+                    <Button x:Name="AddCategoryButton"
+                            Margin="10,0,0,0"
+                            Width="90"
+                            Height="32"
+                            Content="新增分类" />
+                    <!-- 删除书籍按钮：用于删除当前选中的书籍记录（后续在代码里绑定点击事件）。 -->
+                    <Button x:Name="DeleteBookButton" Margin="10,0,0,0" Width="90" Height="32" Content="删除书籍" />
+                    <!-- 清空搜索按钮：用于清空搜索框并恢复当前分类下的完整列表（后续在代码里绑定点击事件）。 -->
+                    <Button x:Name="ClearSearchButton" Margin="10,0,0,0" Width="90" Height="32" Content="清空所有书籍" />
+
+                    <!-- 修复封面按钮：手动扫描数据库中缺失封面的书籍，并重新生成封面图片。 -->
+                    <Button x:Name="RepairCoversButton"
+                        Margin="6,0,0,6"
+                        Width="90"
+                        Height="32"
+                        Content="修复封面" />
+
+
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 下方主体内容区：左侧分类栏 + 右侧书籍列表。 -->
+        <Grid Grid.Row="1">
+            <!-- 主体列定义：左窄右宽。 -->
+            <Grid.ColumnDefinitions>
+                <!-- 左侧分类栏宽度。 -->
+                <ColumnDefinition Width="220" />
+                <!-- 右侧书籍列表占满剩余空间。 -->
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 左侧分类栏外层边框。 -->
+            <Border Grid.Column="0"
+                    Padding="10"
+                    BorderBrush="#DDDDDD"
+                    BorderThickness="0,0,1,0"
+                    Background="#FAFAFA">
+                <!-- 左侧内部布局：标题 + 分类列表。 -->
+                <Grid>
+                    <!-- 左侧行定义。 -->
+                    <Grid.RowDefinitions>
+                        <!-- 第一行：标题。 -->
+                        <RowDefinition Height="Auto" />
+                        <!-- 第二行：列表。 -->
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- 左侧标题。 -->
+                    <TextBlock Grid.Row="0"
+                               Text="分类"
+                               FontSize="16"
+                               FontWeight="Bold" />
+
+                    <!-- 左侧分类列表：系统固定分类 + 格式分类。 -->
+                    <!-- 左侧分类容器：上面保留格式分类，下面显示内容树形分类。 -->
+                    <StackPanel Grid.Row="1"
+            Margin="0,10,0,0">
+
+                        <!-- 格式分类列表：保留原来的全部、最近、收藏、PDF、EPUB、TXT。 -->
+                        <ListBox x:Name="CategoryListBox"
+             SelectedIndex="0">
+                            <!-- 固定分类：全部书籍。 -->
+                            <ListBoxItem Content="全部书籍" Tag="ALL" />
+                            <!-- 固定分类：最近阅读。 -->
+                            <ListBoxItem Content="最近阅读" Tag="RECENT" />
+                            <!-- 固定分类：我的收藏。 -->
+                            <ListBoxItem Content="我的收藏" Tag="FAVORITE" />
+                            <!-- 固定分类：PDF。 -->
+                            <ListBoxItem Content="PDF" Tag="PDF" />
+                            <!-- 固定分类：EPUB。 -->
+                            <ListBoxItem Content="EPUB" Tag="EPUB" />
+                            <!-- 固定分类：TXT。 -->
+                            <ListBoxItem Content="TXT" Tag="TXT" />
+                        </ListBox>
+
+                       
+                        <!-- 内容分类管理区：左侧显示标题，右侧放新增分类按钮。 -->
+                        <Grid Margin="0,14,0,6">
+                            <!-- 三列布局：标题、新增主分类按钮、新增子分类按钮。 -->
+                            <Grid.ColumnDefinitions>
+                                <!-- 第 0 列：标题，占用剩余空间。 -->
+                                <ColumnDefinition Width="*" />
+                                <!-- 第 1 列：新增主分类按钮。 -->
+                                <ColumnDefinition Width="Auto" />
+                                <!-- 第 2 列：新增子分类按钮。 -->
+                                <ColumnDefinition Width="Auto" />
+                                <!-- 第 3 列：删除分类按钮。 -->
+                                <ColumnDefinition Width="Auto" />
+
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 内容分类标题。 -->
+                            <TextBlock Grid.Column="0"
+                               Text="内容分类"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Foreground="#333333"
+                               VerticalAlignment="Center" />
+
+                            <!-- 新增主分类按钮：点击后弹出输入框，新增一个 ParentId 为空的分类。 -->
+                            <Button x:Name="AddRootCategoryButton"
+                                Grid.Column="1"
+                                Width="24"
+                                Height="24"
+                                Margin="4,0,0,0"
+                                Content="+"
+                                ToolTip="新增主分类" />
+
+                            <!-- 新增子分类按钮：点击后在当前选中的主分类下面新增子分类。 -->
+                            <Button x:Name="AddChildCategoryButton"
+                                Grid.Column="2"
+                                Width="24"
+                                Height="24"
+                                Margin="4,0,0,0"
+                                Content="＋"
+                                ToolTip="新增子分类" />
+                            <!-- 删除分类按钮：点击后删除当前选中的内容分类。 -->
+                            <Button x:Name="DeleteCategoryButton"
+                                    Grid.Column="3"
+                                    Width="24"
+                                    Height="24"
+                                    Margin="4,0,0,0"
+                                    Content="-"
+                                    ToolTip="删除分类" />
+
+                        </Grid>
+
+
+                        <!-- 内容分类树：显示主分类和一级子分类。 -->
+                        <TreeView x:Name="ContentCategoryTreeView"
+              SelectedItemChanged="ContentCategoryTreeView_SelectedItemChanged">
+                            <!-- TreeView 的每一项稍后由后台代码从 Categories 表动态加载。 -->
+                        </TreeView>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 右侧书籍展示区。 -->
+            <Grid Grid.Column="1" Margin="12">
+                <!-- 右侧行定义：标题 + 列表。 -->
+                <Grid.RowDefinitions>
+                    <!-- 第一行：标题。 -->
+                    <RowDefinition Height="Auto" />
+                    <!-- 第二行：列表。 -->
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- 右侧标题。 -->
+                <TextBlock Grid.Row="0"
+                           Text="书籍列表"
+                           FontSize="16"
+                           FontWeight="Bold" />
+
+                <!-- 书籍列表控件：用于显示书籍并支持双击打开。 -->
+                <!-- 书籍卡片列表：用一行一张卡片的方式显示书库内容。 -->
+                <!-- 书籍卡片列表：用一行一张卡片的方式显示书库内容。 -->
+                <ListView x:Name="BooksListView"
+                          SelectionMode="Extended"
+
+                          Grid.Row="1"
+                          Margin="0,10,0,0"
+                          BorderBrush="#DDDDDD"
+                          BorderThickness="1"
+                          Background="White"
+                          MouseDoubleClick="BooksListView_MouseDoubleClick">
+
+                    <!-- ListView 资源区：放当前列表内部要用到的右键菜单和样式。 -->
+                    <ListView.Resources>
+                        <!-- 书籍项右键菜单：后续仍然用于修改分类、打开文件所在位置等功能。 -->
+                        <ContextMenu x:Key="BookItemContextMenu">
+                            <!-- 打开文件所在位置：点击后调用现有后台方法。 -->
+                            <MenuItem Header="打开文件所在位置" Click="OpenBookFolderMenuItem_Click" />
+                            <!-- 分隔线：把打开位置和修改分类分开。 -->
+                            <Separator />
+                            
+                            <!-- 菜单项：移动到内容分类，子菜单由后台代码从 TreeView 分类数据动态生成。 -->
+                            <MenuItem Header="移动到内容分类" Tag="MOVE_TO_CONTENT_CATEGORY_ROOT" />
+                            <!-- 菜单项：移出内容分类，把当前书籍的 Category 改为“未分类”，不删除书籍和文件。 -->
+                            <MenuItem Header="移出内容分类" Click="RemoveBookFromContentCategory_Click" />
+
+
+                        </ContextMenu>
+                    </ListView.Resources>
+
+                    <!-- 每一行 ListViewItem 的样式：让每本书显示成卡片行。 -->
+                    <ListView.ItemContainerStyle>
+                        <!-- ListViewItem 样式定义。 -->
+                        <Style TargetType="ListViewItem">
+                            <!-- 绑定右键菜单打开事件，继续使用现有的动态分类菜单逻辑。 -->
+                            <EventSetter Event="ContextMenuOpening" Handler="BookItemContextMenu_Opened" />
+                            <!-- 给每一行绑定右键菜单。 -->
+                            <Setter Property="ContextMenu" Value="{StaticResource BookItemContextMenu}" />
+                            <!-- 去掉默认焦点虚线，让卡片更干净。 -->
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                            <!-- 每行之间留一点空间。 -->
+                            <Setter Property="Margin" Value="0,0,0,0" />
+                            <!-- 让每个列表项横向撑满列表宽度。 -->
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <!-- 设置选中项的基础内边距为 0，避免默认样式影响卡片布局。 -->
+                            <Setter Property="Padding" Value="0" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+
+                    <!-- 每本书的数据模板：定义一行卡片里具体显示什么。 -->
+                    <ListView.ItemTemplate>
+                        <!-- DataTemplate 表示每一本 Book 都按下面结构显示。 -->
+                        <DataTemplate>
+                            <!-- 外层边框：模拟一整行书籍卡片，并显示底部分隔线。 -->
+                            <Border Padding="14"
+                    BorderBrush="#E5E5E5"
+                    BorderThickness="0,0,0,1"
+                    Background="White">
+
+                                <!-- 一行卡片主体：左封面，中间文字，右侧更多按钮。 -->
+                                <Grid>
+                                    <!-- 卡片列定义：封面、文字信息、更多按钮。 -->
+                                    <Grid.ColumnDefinitions>
+                                        <!-- 左侧封面列：固定宽度。 -->
+                                        <ColumnDefinition Width="72" />
+                                        <!-- 中间信息列：占满剩余空间。 -->
+                                        <ColumnDefinition Width="*" />
+                                        <!-- 右侧更多按钮列：固定宽度。 -->
+                                        <ColumnDefinition Width="48" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- 左侧封面图片：绑定 CoverPath 显示默认封面或真实封面。 -->
+                                    <Image Grid.Column="0"
+                           Width="54"
+                           Height="72"
+                           Stretch="UniformToFill"
+                           Source="{Binding CoverPath, Converter={StaticResource CoverImageConverter}}" />
+
+
+                                    <!-- 中间文字区域：显示书名、作者、阅读进度。 -->
+                                    <StackPanel Grid.Column="1"
+                                Margin="12,0,0,0"
+                                VerticalAlignment="Center">
+
+                                        <!-- 第一行：书名，字体更大并加粗。 -->
+                                        <TextBlock Text="{Binding Title}"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="#222222"
+                                   TextTrimming="CharacterEllipsis" />
+
+                                        <!-- 第二行：作者；如果数据库里是空，后续代码层应写入“未知作者”。 -->
+                                        <TextBlock Text="{Binding Author}"
+                                   Margin="0,6,0,0"
+                                   FontSize="13"
+                                   Foreground="#666666"
+                                   TextTrimming="CharacterEllipsis" />
+
+                                        <!-- 第三行：阅读进度区域。 -->
+                                        <TextBlock Margin="0,6,0,0"
+                                   FontSize="12"
+                                   Foreground="#888888">
+
+                            <!-- 阅读进度文字样式：把 0 显示成“未读”，其他值显示百分比。 -->
+                                            <TextBlock.Style>
+                                                <!-- TextBlock 样式定义。 -->
+                                                <Style TargetType="TextBlock">
+                                                    <!-- 默认显示阅读百分比，例如 13%。 -->
+                                                    <Setter Property="Text" Value="{Binding ReadProgress, StringFormat={}{0}%}" />
+                                                    <!-- 触发器集合。 -->
+                                                    <Style.Triggers>
+                                                        <!-- 当阅读进度为 0 时显示“未读”。 -->
+                                                        <DataTrigger Binding="{Binding ReadProgress}" Value="0">
+                                                            <!-- 设置未读显示文字。 -->
+                                                            <Setter Property="Text" Value="未读" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <!-- 右侧更多按钮：现在先只显示“...”，后续可以绑定菜单。 -->
+                                    <Button Grid.Column="2"
+                            Width="32"
+                            Height="32"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Right"
+                            Content="..."
+                            FontSize="16"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ToolTip="更多操作" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+
+
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

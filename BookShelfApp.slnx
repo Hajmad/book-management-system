@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="../BookShelfAppSetup/BookShelfAppSetup.vdproj" Type="Installer">
+    <Build Solution="*|x64" />
+  </Project>
+  <Project Path="BookShelfApp.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+</Solution>
